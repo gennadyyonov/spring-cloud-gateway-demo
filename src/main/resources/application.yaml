@@ -1,0 +1,41 @@
+logging:
+  level:
+    root: INFO
+
+management:
+  server:
+    port:
+      8015
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: ALWAYS
+    loggers:
+      enabled: true
+    restart:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: gateway,health,info,loggers,restart
+    enabled-by-default: true
+
+spring:
+  cloud:
+    gateway:
+      httpclient:
+        use-insecure-trust-manager: true
+      routes:
+        - id: chuck-norris-jokes-module
+          uri: https://api.chucknorris.io/jokes
+          predicates:
+            - Path=/jokes/**
+          filters:
+            - AddResponseHeader=X-Response-Color, Green
+        - id: actuator-proxy-module
+          uri: http://localhost:${management.server.port}/actuator
+          predicates:
+            - Path=/proxy/actuator/**
+          filters:
+            - RewritePath=/proxy/(?<segment>.*), /$\{segment}
